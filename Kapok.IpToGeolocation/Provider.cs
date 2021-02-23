@@ -12,8 +12,9 @@ namespace Kapok.IpToGeolocation
         None = 1,
         IpStack = 2,
         IpGeolocationApi = 3,
-        AbstractApi = 4,
-        IpRegistry = 5,
+        IpGeolocationIo = 4,
+        AbstractApi = 5,
+        IpRegistry = 6,
         BrowserSet = 255
     }
 }

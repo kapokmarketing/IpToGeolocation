@@ -20,31 +20,41 @@ namespace Kapok.IpToGeolocation.Tests
 
         public static IEnumerable<object[]> GetSourcesWithIpAddresses()
         {
-            yield return new object[] { Provider.IpGeolocationApi, "91.213.103.0" };
-            //yield return new object[] { Provider.AbstractApi, "166.171.248.255" };
+            yield return new object[] { Provider.IpGeolocationApi, "91.213.103.0", true };
+            yield return new object[] { Provider.AbstractApi, "166.171.248.255", false };
         }
 
         [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
         [DataTestMethod]
-        public async Task Service_ShouldReturnWithValidDataLive(Provider provider, string ipAddress)
+        public async Task Service_ShouldReturnWithValidDataLive(Provider provider, string ipAddress, bool expectSuccess)
         {
             var service = GetGeolocationService();
 
-            var result = await service.GetAsync(ipAddress, CancellationToken.None);
+            var result = await service.GetAsync(ipAddress, new Provider[] { provider });
 
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Location);
-            Assert.AreEqual(provider, result.Provider);
-            Assert.AreEqual(ipAddress, result.IpAddress);
+            if (expectSuccess)
+            {
+                Assert.IsNotNull(result);
+                Assert.IsNotNull(result.Location);
+                Assert.AreEqual(provider, result.Provider);
+                Assert.AreEqual(ipAddress, result.IpAddress);
+            }
+            else
+            {
+                Assert.IsNotNull(result);
+                Assert.IsNull(result.Location);
+                //Assert.AreEqual(provider, Provider.Unknown);
+                Assert.AreEqual(ipAddress, result.IpAddress);
+            }
         }
 
         [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
         [DataTestMethod]
-        public async Task Service_ShouldReturnWithValidData(Provider provider, string ipAddress)
+        public async Task Service_ShouldReturnWithValidData(Provider provider, string ipAddress, bool expectSuccess)
         {
             var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
 
-            var result = await service.GetAsync(ipAddress, CancellationToken.None);
+            var result = await service.GetAsync(ipAddress, new Provider[] { provider });
 
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Location);

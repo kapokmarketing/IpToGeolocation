@@ -4,6 +4,6 @@ namespace Kapok.IpToGeolocation
 {
     public interface IGeolocationConfiguration
     {
-        List<GeolocationProviderConfiguration> Providers { get; }
+        Dictionary<string, GeolocationProviderConfiguration> Providers { get; }
     }
 }

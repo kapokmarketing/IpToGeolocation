@@ -8,6 +8,6 @@ namespace Kapok.IpToGeolocation
 {
     public class GeolocationConfiguration : IGeolocationConfiguration
     {
-        public List<GeolocationProviderConfiguration> Providers { get; } = new List<GeolocationProviderConfiguration>();
+        public Dictionary<string, GeolocationProviderConfiguration> Providers { get; } = new Dictionary<string, GeolocationProviderConfiguration>();
     }
 }

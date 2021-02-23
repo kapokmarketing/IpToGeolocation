@@ -15,11 +15,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 .OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
                 .RetryAsync(retryCount, (ex, retryCount, context) =>
                 {
-                    if (context.TryGetValue("request", out var requestObject) && requestObject is HttpRequestMessage request
-                    && context.TryGetValue("handler", out var handlerObject) && handlerObject is GeolocationRequestHandler handler)
+                    if (context.TryGetValue(GeolocationService.CONTEXT_KEY_REQUEST, out var temp) && temp is HttpRequestMessage request
+                    && context.TryGetValue(GeolocationService.CONTEXT_KEY_HANDLER, out temp) && temp is GeolocationRequestHandler handler)
                     {
-                        var source = handler.SetRequestMessageUri(request, retryCount);
-                        context["source"] = source;
+                        var provider = handler.SetRequestMessageUri(request, retryCount);
+                        context[GeolocationService.CONTEXT_KEY_PROVIDER] = provider;
+                        context[GeolocationService.CONTEXT_KEY_RETRY_COUNT] = retryCount;
                     }
                 }));
 

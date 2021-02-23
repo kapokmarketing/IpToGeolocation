@@ -8,10 +8,11 @@ namespace Kapok.IpToGeolocation
     {
         public string IpAddress { get; set; }
         public Provider Provider { get; set; }
+        public int RetryCount { get; set; }
         public IGeolocationDto? Location { get; set; }
-        public GeolocationResult(string ipAddress)
-            => (IpAddress, Location, Provider) = (ipAddress, null, Provider.Unknown);
-        public GeolocationResult(string ipAddress, IGeolocationDto location, Provider provider = Provider.Unknown)
-            => (IpAddress, Location, Provider) = (ipAddress, GeolocationDto.Create(location), provider);
+        public GeolocationResult(string ipAddress, int retryCount = 0)
+            => (IpAddress, Location, Provider, RetryCount) = (ipAddress, null, Provider.Unknown, retryCount);
+        public GeolocationResult(string ipAddress, IGeolocationDto location, Provider provider, int retryCount)
+            => (IpAddress, Location, Provider, RetryCount) = (ipAddress, GeolocationDto.Create(location), provider, retryCount);
     }
 }

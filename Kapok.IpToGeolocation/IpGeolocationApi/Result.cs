@@ -98,21 +98,14 @@ namespace Kapok.IpToGeolocation.IpGeolocationApi
         string? IGeolocationDto.City => null;
 
         string? IGeolocationDto.ContinentCode => null;
-
         string? IGeolocationDto.ContinentName => this.Continent;
-
+        string? IGeolocationDto.CountryCode => this.Alpha2;
         string? IGeolocationDto.CountryName => this.Name;
-
         double? IGeolocationDto.Latitude => this.Geo?.Latitude;
-
         double? IGeolocationDto.Longitude => this.Geo?.Longitude;
-
         string? IGeolocationDto.TimeZoneCode => null;
-
         string? IGeolocationDto.RegionCode => null;
-
         string? IGeolocationDto.RegionName => null;
-
         string? IGeolocationDto.PostalCode => null;
     }
 }

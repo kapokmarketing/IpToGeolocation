@@ -14,11 +14,19 @@ namespace Kapok.IpToGeolocation
 
         public Provider SetRequestMessageUri(HttpRequestMessage requestMessage, int retryCount = 0)
         {
-            var host = _hosts[retryCount];
+            if (_hosts.Length == 0)
+            {
+                throw new NotImplementedException("Geolocation handler cannot find any valid hosts for this request.");
+            }
+
+            var index = retryCount > 0 ? retryCount % _hosts.Length - 1 : 0;
+            var host = _hosts[index];
             var requestUri = host.UrlPatternWithPrivateKey?.Replace("{IpAddress}", _ipAddress);
 
             if (requestUri == null)
+            {
                 throw new NotImplementedException("Geolocation handler cannot generate an appropriate uri for this request.");
+            }
 
             requestMessage.RequestUri = new Uri(requestUri);
 

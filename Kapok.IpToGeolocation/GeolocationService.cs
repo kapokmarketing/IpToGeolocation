@@ -14,7 +14,11 @@ namespace Kapok.IpToGeolocation
 {
     public class GeolocationService
     {
-        private const string CONFIGURATION_SECTION_NAME = "IpToGeolocation";
+        public const string CONTEXT_KEY_PROVIDER = "provider";
+        public const string CONTEXT_KEY_HANDLER = "handler";
+        public const string CONTEXT_KEY_REQUEST = "request";
+        public const string CONTEXT_KEY_RETRY_COUNT = "retryCount";
+        public const string CONFIGURATION_SECTION_NAME = "IpToGeolocation";
 
         private readonly ILogger<GeolocationService>? _logger;
         private readonly IGeolocationConfiguration _configuration;
@@ -38,21 +42,25 @@ namespace Kapok.IpToGeolocation
         }
 
         private GeolocationProviderConfiguration[] GetProviders()
-            => _configuration.Providers.Where(p => !p.Disabled).ToArray();
+            => _configuration.Providers.Values.Where(p => !p.Disabled).ToArray();
 
-        private (HttpRequestMessage, Context) GetHttpRequestMessage(string ipAddress)
+        private GeolocationProviderConfiguration[] GetProviders(IEnumerable<Provider> providers)
+            => _configuration.Providers.Values.Where(p => !p.Disabled && providers.Contains(p.Name)).ToArray();
+
+        private (HttpRequestMessage, Context) GetHttpRequestMessage(string ipAddress, IEnumerable<Provider>? validProviders)
         {
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get
             };
-            var handler = new GeolocationRequestHandler(GetProviders(), ipAddress);
-            var source = handler.SetRequestMessageUri(request);
+            var providers = validProviders != null ? GetProviders(validProviders) : GetProviders();
+            var handler = new GeolocationRequestHandler(providers, ipAddress);
+            var provider = handler.SetRequestMessageUri(request);
             var context = new Context($"GeolocationFor{ipAddress}", new Dictionary<string, object>()
             {
-                { "handler", handler },
-                { "request", request },
-                { "source", source }
+                { CONTEXT_KEY_HANDLER, handler },
+                { CONTEXT_KEY_REQUEST, request },
+                { CONTEXT_KEY_PROVIDER, provider }
             });
 
             request.SetPolicyExecutionContext(context);
@@ -62,24 +70,35 @@ namespace Kapok.IpToGeolocation
 
         private Provider GetProvider(Context context)
         {
-            if (context.TryGetValue("source", out var sourceObject) && sourceObject is Provider source)
+            if (context.TryGetValue(CONTEXT_KEY_PROVIDER, out var temp) && temp is Provider provider)
             {
-                return source;
+                return provider;
             }
 
             return Provider.Unknown;
         }
 
-        public async Task<GeolocationResult> GetAsync(string ipAddress, CancellationToken cancellationToken)
+        private int GetRetryCount(Context context)
         {
-            var (request, context) = GetHttpRequestMessage(ipAddress);
+            if (context.TryGetValue(CONTEXT_KEY_RETRY_COUNT, out var temp) && temp is int retryCount)
+            {
+                return retryCount;
+            }
+
+            return 0;
+        }
+
+        public async Task<GeolocationResult> GetAsync(string ipAddress, IEnumerable<Provider>? validProviders = null, CancellationToken cancellationToken = default)
+        {
+            var (request, context) = GetHttpRequestMessage(ipAddress, validProviders);
             var response = await _httpClient.SendAsync(request, cancellationToken);
+            var retryCount = GetRetryCount(context);
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger?.LogWarning("Final retry attempt for geolocation of {IpAddress} failed with status code {StatusCode} for {OperationKey}.",
-                    ipAddress, response.StatusCode, context.OperationKey);
-                return new GeolocationResult(ipAddress);
+                _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} failed with status code {StatusCode} for {OperationKey}.",
+                    retryCount, ipAddress, response.StatusCode, context.OperationKey);
+                return new GeolocationResult(ipAddress, retryCount);
             }
 
             using (var responseStream = await response.Content.ReadAsStreamAsync())
@@ -87,13 +106,13 @@ namespace Kapok.IpToGeolocation
                 var source = GetProvider(context);
                 if (source == Provider.Unknown)
                 {
-                    _logger?.LogWarning("Final retry attempt for geolocation of {IpAddress} context is missing the source. Deserialization cannot occur.",
-                        ipAddress, response.StatusCode, context.OperationKey);
-                    return new GeolocationResult(ipAddress);
+                    _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} context is missing the source. Deserialization cannot occur.",
+                        retryCount, ipAddress, response.StatusCode, context.OperationKey);
+                    return new GeolocationResult(ipAddress, retryCount);
                 }
 
                 var dto = await GeolocationSerializer.DeserializeAsync(source, responseStream, cancellationToken);
-                return new GeolocationResult(ipAddress, dto, source);
+                return new GeolocationResult(ipAddress, dto, source, retryCount);
             }
         }
     }
