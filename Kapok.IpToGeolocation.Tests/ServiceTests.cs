@@ -26,7 +26,7 @@ namespace Kapok.IpToGeolocation.Tests
 
         [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
         [DataTestMethod]
-        public async Task Service_ShouldReturnWithValidDataLive(Provider provider, string ipAddress, bool expectSuccess)
+        public async Task Service_WhenOneProvider_ShouldReturnWithValidDataLive(Provider provider, string ipAddress, bool expectSuccess)
         {
             var service = GetGeolocationService();
 
@@ -50,7 +50,7 @@ namespace Kapok.IpToGeolocation.Tests
 
         [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
         [DataTestMethod]
-        public async Task Service_ShouldReturnWithValidData(Provider provider, string ipAddress, bool expectSuccess)
+        public async Task Service_WhenOneProvider_ShouldReturnWithValidData(Provider provider, string ipAddress, bool expectSuccess)
         {
             var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
 
@@ -59,6 +59,20 @@ namespace Kapok.IpToGeolocation.Tests
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Location);
             Assert.AreEqual(provider, result.Provider);
+            Assert.AreEqual(ipAddress, result.IpAddress);
+        }
+
+        [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
+        [DataTestMethod]
+        public async Task Service_WhenNoProviders_ShouldReturnNullAndUnknown(Provider provider, string ipAddress, bool expectSuccess)
+        {
+            var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
+
+            var result = await service.GetAsync(ipAddress, new Provider[] { });
+
+            Assert.IsNotNull(result);
+            Assert.IsNull(result.Location);
+            Assert.AreEqual(Provider.Unknown, result.Provider);
             Assert.AreEqual(ipAddress, result.IpAddress);
         }
 

@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 .RetryAsync(retryCount, (ex, retryCount, context) =>
                 {
                     if (context.TryGetValue(GeolocationService.CONTEXT_KEY_REQUEST, out var temp) && temp is HttpRequestMessage request
-                    && context.TryGetValue(GeolocationService.CONTEXT_KEY_HANDLER, out temp) && temp is GeolocationRequestHandler handler)
+                    && context.TryGetValue(GeolocationService.CONTEXT_KEY_HANDLER, out temp) && temp is IGeolocationRequestHandler handler)
                     {
                         var provider = handler.SetRequestMessageUri(request, retryCount);
                         context[GeolocationService.CONTEXT_KEY_PROVIDER] = provider;

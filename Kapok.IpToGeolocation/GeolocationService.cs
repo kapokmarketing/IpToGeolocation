@@ -47,13 +47,27 @@ namespace Kapok.IpToGeolocation
         private GeolocationProviderConfiguration[] GetProviders(IEnumerable<Provider> providers)
             => _configuration.Providers.Values.Where(p => !p.Disabled && providers.Contains(p.Name)).ToArray();
 
-        private (HttpRequestMessage, Context) GetHttpRequestMessage(string ipAddress, IEnumerable<Provider>? validProviders)
+        /// <summary>
+        /// Create the <see cref="HttpRequestMessage"/> for the first valid and available provider.
+        /// </summary>
+        /// <param name="ipAddress">The IP address to include in the request to the provider.</param>
+        /// <param name="validProviders">The list of valid providers to check for in <see cref="IGeolocationConfiguration.Providers"/>. If null, all available providers are valid.</param>
+        /// <returns>If one or more providers are available, the HttpRequestMessage object. Otherwise, null.</returns>
+        private (HttpRequestMessage?, Context?) GetHttpRequestMessage(string ipAddress, IEnumerable<Provider>? validProviders)
         {
             var request = new HttpRequestMessage()
             {
                 Method = HttpMethod.Get
             };
             var providers = validProviders != null ? GetProviders(validProviders) : GetProviders();
+
+            if (providers.Length == 0)
+            {
+                _logger?.LogDebug("No valid providers found to create an HttpRequestMessage for geolocation of {IpAddress}.",
+                    ipAddress);
+                return (null!, null!);
+            }
+
             var handler = new GeolocationRequestHandler(providers, ipAddress);
             var provider = handler.SetRequestMessageUri(request);
             var context = new Context($"GeolocationFor{ipAddress}", new Dictionary<string, object>()
@@ -91,9 +105,15 @@ namespace Kapok.IpToGeolocation
         public async Task<GeolocationResult> GetAsync(string ipAddress, IEnumerable<Provider>? validProviders = null, CancellationToken cancellationToken = default)
         {
             var (request, context) = GetHttpRequestMessage(ipAddress, validProviders);
+            if (request == null || context == null)
+            {
+                _logger?.LogWarning("Geolocation of {IpAddress} failed. No attempts were made, because a valid HttpRequestMessage or Polly.Context could not be properly initialized.",
+                    ipAddress);
+                return new GeolocationResult(ipAddress);
+            }
+
             var response = await _httpClient.SendAsync(request, cancellationToken);
             var retryCount = GetRetryCount(context);
-
             if (!response.IsSuccessStatusCode)
             {
                 _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} failed with status code {StatusCode} for {OperationKey}. Content will not be processed.",

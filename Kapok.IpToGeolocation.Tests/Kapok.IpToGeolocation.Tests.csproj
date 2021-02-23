@@ -9,9 +9,13 @@
 
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
 
-    <Version>0.0.2-alpha</Version>
+    <Version>0.0.3-alpha</Version>
 
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+
+    <Company>Kapok Marketing, Inc.</Company>
+
+    <Authors>Kapok Marketing, Inc., Jake Braun</Authors>
   </PropertyGroup>
 
   <ItemGroup>
