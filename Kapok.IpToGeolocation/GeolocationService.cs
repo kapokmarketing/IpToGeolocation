@@ -96,8 +96,8 @@ namespace Kapok.IpToGeolocation
 
             if (!response.IsSuccessStatusCode)
             {
-                _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} failed with status code {StatusCode} for {OperationKey}.",
-                    retryCount, ipAddress, response.StatusCode, context.OperationKey);
+                _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} failed with status code {StatusCode} for {OperationKey}. Content will not be processed.",
+                    retryCount, ipAddress, response.StatusCode, context?.OperationKey);
                 return new GeolocationResult(ipAddress, retryCount);
             }
 
@@ -106,8 +106,8 @@ namespace Kapok.IpToGeolocation
                 var source = GetProvider(context);
                 if (source == Provider.Unknown)
                 {
-                    _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} context is missing the source. Deserialization cannot occur.",
-                        retryCount, ipAddress, response.StatusCode, context.OperationKey);
+                    _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} context is missing the source for {OperationKey}. Deserialization cannot occur.",
+                        retryCount, ipAddress, context?.OperationKey);
                     return new GeolocationResult(ipAddress, retryCount);
                 }
 
