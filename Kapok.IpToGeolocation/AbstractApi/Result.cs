@@ -76,7 +76,7 @@ namespace Kapok.IpToGeolocation.AbstractApi
         string? IGeolocationDto.ContinentName => Continent;
         string? IGeolocationDto.CountryName => Country;
         string? IGeolocationDto.TimeZoneCode => Timezone?.Abbreviation;
-        string? IGeolocationDto.RegionCode => Region;
-        string? IGeolocationDto.RegionName => RegionIsoCode;
+        string? IGeolocationDto.RegionCode => RegionIsoCode;
+        string? IGeolocationDto.RegionName => Region;
     }
 }

@@ -55,7 +55,7 @@ namespace Kapok.IpToGeolocation.IpRegistry
 
         string? IGeolocationDto.TimeZoneCode => TimeZone?.Abbreviation;
 
-        string? IGeolocationDto.RegionCode => Location?.Region?.Code;
+        string? IGeolocationDto.RegionCode => Location?.Region?.Code?.Length == 5 ? Location?.Region?.Code[3..] : null;
 
         string? IGeolocationDto.RegionName => Location?.Region?.Name;
 
