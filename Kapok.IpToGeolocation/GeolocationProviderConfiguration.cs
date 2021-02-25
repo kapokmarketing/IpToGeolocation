@@ -10,6 +10,7 @@ namespace Kapok.IpToGeolocation
 
         public Provider Name { get; set; }
         public bool Disabled { get; set; }
+        public int Priority { get; set; }
         public string? UrlPattern { get; set; }
         public string? PrivateKey { get; set; }
         public string? UrlPatternWithPrivateKey

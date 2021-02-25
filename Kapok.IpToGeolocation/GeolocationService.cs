@@ -42,10 +42,10 @@ namespace Kapok.IpToGeolocation
         }
 
         private GeolocationProviderConfiguration[] GetProviders()
-            => _configuration.Providers.Values.Where(p => !p.Disabled).ToArray();
+            => _configuration.Providers.Values.Where(p => !p.Disabled).OrderBy(p => p.Priority).ToArray();
 
         private GeolocationProviderConfiguration[] GetProviders(IEnumerable<Provider> providers)
-            => _configuration.Providers.Values.Where(p => !p.Disabled && providers.Contains(p.Name)).ToArray();
+            => _configuration.Providers.Values.Where(p => !p.Disabled && providers.Contains(p.Name)).OrderBy(p => p.Priority).ToArray();
 
         /// <summary>
         /// Create the <see cref="HttpRequestMessage"/> for the first valid and available provider.
