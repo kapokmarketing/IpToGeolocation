@@ -5,9 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace Kapok.IpToGeolocation.IpGeolocationApi
 {
-    public class Result : IGeolocationSourceResult, IGeolocationDto
+    public class Result : IGeolocationSourceResult
     {
         public Provider Source => Provider.IpGeolocationApi;
+        public bool Success => true;
 
         [JsonPropertyName("continent")]
         public string? Continent { get; set; }

@@ -20,12 +20,12 @@ namespace Kapok.IpToGeolocation
             _ => throw new NotImplementedException(),
         };
 
-        public static async Task<IGeolocationDto> DeserializeAsync(Provider source, Stream utf8Json, CancellationToken cancellationToken)
+        public static async Task<IGeolocationDto?> DeserializeAsync(Provider source, Stream utf8Json, CancellationToken cancellationToken)
         {
             var returnType = GetType(source);
-            var result = (IGeolocationDto) await JsonSerializer.DeserializeAsync(utf8Json, returnType, cancellationToken: cancellationToken);
+            var result = (IGeolocationSourceResult) await JsonSerializer.DeserializeAsync(utf8Json, returnType, cancellationToken: cancellationToken);
 
-            return GeolocationDto.Create(result);
+            return result.Success ? GeolocationDto.Create(result) : null;
         }
 
         public static IGeolocationDto Deserialize(Provider source, string json)

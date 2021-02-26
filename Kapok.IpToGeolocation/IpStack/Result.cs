@@ -2,9 +2,15 @@
 
 namespace Kapok.IpToGeolocation.IpStack
 {
-    public class Result : IGeolocationSourceResult, IGeolocationDto
+    public partial class Result : IGeolocationSourceResult
     {
         public Provider Source => Provider.IpStack;
+
+        [JsonPropertyName("success")]
+        public bool Success { get; set; } = true;
+
+        [JsonPropertyName("error")]
+        public Error? Error { get; set; }
 
         [JsonPropertyName("ip")]
         public string? Ip { get; set; }

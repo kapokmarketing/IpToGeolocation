@@ -9,7 +9,7 @@
 
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
 
-    <Version>0.0.5-alpha</Version>
+    <Version>0.0.6-alpha</Version>
 
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 

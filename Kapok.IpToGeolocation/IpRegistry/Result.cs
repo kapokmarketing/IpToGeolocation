@@ -3,9 +3,10 @@
 namespace Kapok.IpToGeolocation.IpRegistry
 {
 
-    public class Result : IGeolocationSourceResult, IGeolocationDto
+    public class Result : IGeolocationSourceResult
     {
         public Provider Source => Provider.IpRegistry;
+        public bool Success => true;
 
         [JsonPropertyName("ip")]
         public string? Ip { get; set; }

@@ -132,6 +132,14 @@ namespace Kapok.IpToGeolocation
                 }
 
                 var dto = await GeolocationSerializer.DeserializeAsync(source, responseStream, cancellationToken);
+
+                if (dto == null)
+                {
+                    _logger?.LogWarning("Attempt ({RetryCount}/??) for geolocation of {IpAddress} failed because of an unexpected result from the provider. Any remaining retries will not occur. Result: {Result}",
+                        retryCount, ipAddress, dto);
+                    return new GeolocationResult(ipAddress, retryCount);
+                }
+
                 return new GeolocationResult(ipAddress, dto, source, retryCount);
             }
         }

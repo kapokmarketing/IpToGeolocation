@@ -1,7 +1,8 @@
 ﻿namespace Kapok.IpToGeolocation
 {
-    public interface IGeolocationSourceResult
+    public interface IGeolocationSourceResult : IGeolocationDto
     {
         Provider Source { get; }
+        bool Success { get; }
     }
 }

@@ -5,9 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace Kapok.IpToGeolocation.AbstractApi
 {
-    public class Result : IGeolocationSourceResult, IGeolocationDto
+    public class Result : IGeolocationSourceResult
     {
         public Provider Source => Provider.AbstractApi;
+        public bool Success => true;
 
         [JsonPropertyName("ip_address")]
         public string? IpAddress { get; set; }

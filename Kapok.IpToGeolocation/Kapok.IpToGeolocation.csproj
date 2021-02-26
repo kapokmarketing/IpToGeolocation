@@ -7,7 +7,7 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Copyright>Ⓒ Kapok Marketing, Inc. All Rights Reserved.</Copyright>
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
-    <Version>0.0.5-alpha</Version>
+    <Version>0.0.6-alpha</Version>
     <PackageProjectUrl>https://github.com/kapokmarketing/IpToGeolocation</PackageProjectUrl>
     <RepositoryUrl>https://github.com/kapokmarketing/IpToGeolocation</RepositoryUrl>
     <Authors>Kapok Marketing, Inc., Jake Braun</Authors>
