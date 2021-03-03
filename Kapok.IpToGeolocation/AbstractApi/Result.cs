@@ -17,7 +17,7 @@ namespace Kapok.IpToGeolocation.AbstractApi
         public string? City { get; set; }
 
         [JsonPropertyName("city_geoname_id")]
-        public int CityGeonameId { get; set; }
+        public int? CityGeonameId { get; set; }
 
         [JsonPropertyName("region")]
         public string? Region { get; set; }
