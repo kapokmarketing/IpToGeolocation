@@ -14,11 +14,11 @@ namespace Kapok.IpToGeolocation
 {
     public class GeolocationService
     {
-        public const string CONTEXT_KEY_PROVIDER = "provider";
-        public const string CONTEXT_KEY_HANDLER = "handler";
-        public const string CONTEXT_KEY_REQUEST = "request";
-        public const string CONTEXT_KEY_RETRY_COUNT = "retryCount";
-        public const string CONFIGURATION_SECTION_NAME = "IpToGeolocation";
+        public static readonly string CONTEXT_KEY_PROVIDER = "provider";
+        public static readonly string CONTEXT_KEY_HANDLER = "handler";
+        public static readonly string CONTEXT_KEY_REQUEST = "request";
+        public static readonly string CONTEXT_KEY_RETRY_COUNT = "retryCount";
+        public static readonly string CONFIGURATION_SECTION_NAME = "IpToGeolocation";
 
         private readonly ILogger<GeolocationService>? _logger;
         private readonly IGeolocationConfiguration _configuration;
@@ -55,7 +55,7 @@ namespace Kapok.IpToGeolocation
         /// <returns>If one or more providers are available, the HttpRequestMessage object. Otherwise, null.</returns>
         private (HttpRequestMessage?, Context?) GetHttpRequestMessage(string ipAddress, IEnumerable<Provider>? validProviders)
         {
-            var request = new HttpRequestMessage()
+            var request = new HttpRequestMessage
             {
                 Method = HttpMethod.Get
             };
@@ -70,7 +70,7 @@ namespace Kapok.IpToGeolocation
 
             var handler = new GeolocationRequestHandler(providers, ipAddress);
             var provider = handler.SetRequestMessageUri(request);
-            var context = new Context($"GeolocationFor{ipAddress}", new Dictionary<string, object>()
+            var context = new Context($"GeolocationFor{ipAddress}", new Dictionary<string, object>
             {
                 { CONTEXT_KEY_HANDLER, handler },
                 { CONTEXT_KEY_REQUEST, request },
@@ -102,7 +102,10 @@ namespace Kapok.IpToGeolocation
             return 0;
         }
 
-        public async Task<GeolocationResult> GetAsync(string ipAddress, IEnumerable<Provider>? validProviders = null, CancellationToken cancellationToken = default)
+        public Task<GeolocationResult> GetAsync(string ipAddress, CancellationToken cancellationToken)
+            => GetAsync(ipAddress, validProviders: null, cancellationToken);
+
+        public async Task<GeolocationResult> GetAsync(string ipAddress, IEnumerable<Provider>? validProviders, CancellationToken cancellationToken)
         {
             var (request, context) = GetHttpRequestMessage(ipAddress, validProviders);
             if (request == null || context == null)

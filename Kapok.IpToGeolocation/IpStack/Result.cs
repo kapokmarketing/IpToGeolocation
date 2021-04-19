@@ -2,7 +2,7 @@
 
 namespace Kapok.IpToGeolocation.IpStack
 {
-    public partial class Result : IGeolocationSourceResult
+    public class Result : IGeolocationSourceResult
     {
         public Provider Source => Provider.IpStack;
 

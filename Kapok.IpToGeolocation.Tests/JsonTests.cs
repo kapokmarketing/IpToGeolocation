@@ -15,7 +15,7 @@ namespace Kapok.IpToGeolocation.Tests
     {
         private static IEnumerable<Provider> Sources;
 
-        [ClassInitialize()]
+        [ClassInitialize]
         public static void Initialize(TestContext context)
         {
             Sources = new Provider[] { Provider.AbstractApi, Provider.IpRegistry, Provider.IpStack };

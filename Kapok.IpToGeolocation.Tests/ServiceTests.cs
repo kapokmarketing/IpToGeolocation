@@ -30,7 +30,7 @@ namespace Kapok.IpToGeolocation.Tests
         {
             var service = GetGeolocationService();
 
-            var result = await service.GetAsync(ipAddress, new Provider[] { provider });
+            var result = await service.GetAsync(ipAddress, new Provider[] { provider }, CancellationToken.None);
 
             if (expectSuccess)
             {
@@ -43,7 +43,7 @@ namespace Kapok.IpToGeolocation.Tests
             {
                 Assert.IsNotNull(result);
                 Assert.IsNull(result.Location);
-                //Assert.AreEqual(provider, Provider.Unknown);
+                // TODO: Should we check the Provider?
                 Assert.AreEqual(ipAddress, result.IpAddress);
             }
         }
@@ -54,7 +54,7 @@ namespace Kapok.IpToGeolocation.Tests
         {
             var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
 
-            var result = await service.GetAsync(ipAddress, new Provider[] { provider });
+            var result = await service.GetAsync(ipAddress, new Provider[] { provider }, CancellationToken.None);
 
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Location);
@@ -68,7 +68,7 @@ namespace Kapok.IpToGeolocation.Tests
         {
             var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
 
-            var result = await service.GetAsync(ipAddress, new Provider[] { });
+            var result = await service.GetAsync(ipAddress, new Provider[] { }, CancellationToken.None);
 
             Assert.IsNotNull(result);
             Assert.IsNull(result.Location);
@@ -92,16 +92,16 @@ namespace Kapok.IpToGeolocation.Tests
                   ItExpr.IsAny<HttpRequestMessage>(),
                   ItExpr.IsAny<CancellationToken>()
                )
-               .Returns((HttpRequestMessage request, CancellationToken cancellationToken) => GetMockResponse(provider, request, cancellationToken))
+               .Returns((HttpRequestMessage request, CancellationToken cancellationToken) => GetMockResponse(provider))
                .Verifiable();
 
             return handlerMock;
         }
 
-        private Task<HttpResponseMessage> GetMockResponse(Provider provider, HttpRequestMessage request, CancellationToken cancellationToken)
+        private Task<HttpResponseMessage> GetMockResponse(Provider provider)
         {
             var content = GetJson(provider);
-            var response = new HttpResponseMessage()
+            var response = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
                 Content = new StringContent(content),

@@ -22,13 +22,13 @@ namespace Kapok.IpToGeolocation.Tests
         private string TestUrl => $"https://localhost/?ip={TestIpAddress}&key={TestPrivateKey}";
 
         private GeolocationProviderConfiguration GetTestProvider(Provider provider)
-            => new GeolocationProviderConfiguration() { Name = provider, Disabled = false, PrivateKey = TestPrivateKey, UrlPattern = TestUrlPattern };
+            => new GeolocationProviderConfiguration { Name = provider, Disabled = false, PrivateKey = TestPrivateKey, UrlPattern = TestUrlPattern };
         private GeolocationProviderConfiguration[] GetTestProviders(Provider provider)
-            => new GeolocationProviderConfiguration[] { GetTestProvider(provider) };
+            => new [] { GetTestProvider(provider) };
         private GeolocationRequestHandler GetTestHandler(Provider provider)
             => new GeolocationRequestHandler(GetTestProviders(provider), TestIpAddress);
         private GeolocationRequestHandler GetTestHandlerEmpty()
-            => new GeolocationRequestHandler(new GeolocationProviderConfiguration[] { }, TestIpAddress);
+            => new GeolocationRequestHandler(Array.Empty<GeolocationProviderConfiguration>(), TestIpAddress);
 
         [TestMethod]
         public void Handler_WhenEmpty_ShouldThrowGeolocationException()
@@ -37,7 +37,7 @@ namespace Kapok.IpToGeolocation.Tests
 
             Assert.ThrowsException<GeolocationException>(() =>
             {
-                var provider = handler.SetRequestMessageUri(new HttpRequestMessage(), 0);
+                _ = handler.SetRequestMessageUri(new HttpRequestMessage(), 0);
             });
         }
 

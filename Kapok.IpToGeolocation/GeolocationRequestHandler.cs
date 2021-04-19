@@ -12,6 +12,9 @@ namespace Kapok.IpToGeolocation
         public GeolocationRequestHandler(GeolocationProviderConfiguration[] hosts, string ipAddress)
             => (_hosts, _ipAddress) = (hosts, ipAddress);
 
+        public Provider SetRequestMessageUri(HttpRequestMessage requestMessage)
+            => SetRequestMessageUri(requestMessage, 0);
+
         /// <summary>
         /// Determine the provider for the current attempt to find a geolocation for <see cref="_ipAddress"/>, and
         /// use that provider to set the <see cref="HttpRequestMessage.RequestUri"/> on <paramref name="requestMessage"/>.
@@ -21,7 +24,7 @@ namespace Kapok.IpToGeolocation
         /// <returns>The selected <see cref="Provider"/>.</returns>
         /// <exception cref="GeolocationException">Thrown when <see cref="_hosts"/> is empty or contains an invalid <see cref="GeolocationProviderConfiguration"/>.</exception>
         /// <exception cref="UriFormatException">Thrown by <see cref="Uri"/> when the uri for the current provider is malformed.</exception>
-        public Provider SetRequestMessageUri(HttpRequestMessage requestMessage, int retryCount = 0)
+        public Provider SetRequestMessageUri(HttpRequestMessage requestMessage, int retryCount)
         {
             if (_hosts.Length == 0)
             {
