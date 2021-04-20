@@ -33,35 +33,45 @@ namespace Kapok.IpToGeolocation.Tests
         [TestMethod]
         public void Handler_WhenEmpty_ShouldThrowGeolocationException()
         {
+            // Arrange
             var handler = GetTestHandlerEmpty();
 
-            Assert.ThrowsException<GeolocationException>(() =>
+            // Act
+            var action = new Action(() =>
             {
                 _ = handler.SetRequestMessageUri(new HttpRequestMessage(), 0);
             });
+
+            // Assert
+            Assert.ThrowsException<GeolocationException>(action);
         }
 
         [TestMethod]
         public void Handler_ShouldReturnProvider()
         {
+            // Arrange
             var expectedValue = Provider.AbstractApi;
             var handler = GetTestHandler(expectedValue);
 
+            // Act
             var provider = handler.SetRequestMessageUri(new HttpRequestMessage(), 0);
 
+            // Assert
             Assert.AreEqual(expectedValue, provider);
         }
 
         [TestMethod]
         public void Handler_ShouldSetRequestUri()
         {
+            // Arrange
             var expectedValue = Provider.AbstractApi;
             var handler = GetTestHandler(expectedValue);
             var request = new HttpRequestMessage();
 
             // Act
-            var provider = handler.SetRequestMessageUri(request, 0);
+            _ = handler.SetRequestMessageUri(request, 0);
 
+            // Assert
             Assert.AreEqual(TestUrl, request.RequestUri.ToString());
         }
     }

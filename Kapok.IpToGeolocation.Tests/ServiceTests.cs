@@ -54,7 +54,7 @@ namespace Kapok.IpToGeolocation.Tests
         {
             var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
 
-            var result = await service.GetAsync(ipAddress, new Provider[] { provider }, CancellationToken.None);
+            var result = await service.GetAsync(ipAddress, new [] { provider }, CancellationToken.None);
 
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Location);
