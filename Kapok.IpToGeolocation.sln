@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{625013D7-1D1C-4585-AED3-AA4C2B331362}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		.git\config = .git\config
 		LICENSE = LICENSE
 	EndProjectSection
 EndProject

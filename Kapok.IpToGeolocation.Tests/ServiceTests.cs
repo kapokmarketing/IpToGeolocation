@@ -28,10 +28,13 @@ namespace Kapok.IpToGeolocation.Tests
         [DataTestMethod]
         public async Task Service_WhenOneProvider_ShouldReturnWithValidDataLive(Provider provider, string ipAddress, bool expectSuccess)
         {
+            // Arrange
             var service = GetGeolocationService();
 
+            // Act
             var result = await service.GetAsync(ipAddress, new Provider[] { provider }, CancellationToken.None);
 
+            // Assert
             if (expectSuccess)
             {
                 Assert.IsNotNull(result);
@@ -52,10 +55,13 @@ namespace Kapok.IpToGeolocation.Tests
         [DataTestMethod]
         public async Task Service_WhenOneProvider_ShouldReturnWithValidData(Provider provider, string ipAddress, bool expectSuccess)
         {
+            // Arrange
             var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
 
+            // Act
             var result = await service.GetAsync(ipAddress, new [] { provider }, CancellationToken.None);
 
+            // Assert
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Location);
             Assert.AreEqual(provider, result.Provider);
@@ -66,10 +72,13 @@ namespace Kapok.IpToGeolocation.Tests
         [DataTestMethod]
         public async Task Service_WhenNoProviders_ShouldReturnNullAndUnknown(Provider provider, string ipAddress, bool expectSuccess)
         {
+            // Arrange
             var service = GetGeolocationServiceWithMockHttpMessageHandler(provider);
 
+            // Act
             var result = await service.GetAsync(ipAddress, new Provider[] { }, CancellationToken.None);
 
+            // Assert
             Assert.IsNotNull(result);
             Assert.IsNull(result.Location);
             Assert.AreEqual(Provider.Unknown, result.Provider);
