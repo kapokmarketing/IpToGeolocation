@@ -4,7 +4,7 @@ A cross-vendor library to handle IP geolocation lookups.
 
 ## License
 
-This repository is licensed under the [AGPL-3.0 license](https://opensource.org/licenses/AGPL-3.0).
+This repository is licensed under the [AGPL-3.0-only license](https://licenses.nuget.org/AGPL-3.0-only).
 
 ## NuGet
 
