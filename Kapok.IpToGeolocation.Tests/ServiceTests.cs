@@ -1,13 +1,9 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +11,7 @@ namespace Kapok.IpToGeolocation.Tests
 {
     [TestClass]
     [DeploymentItem("Data")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Unused parameters simplifies DynamicData usage.")]
     public class ServiceTests : BaseTests
     {
 
