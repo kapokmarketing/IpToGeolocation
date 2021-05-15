@@ -8,16 +8,16 @@ namespace Kapok.IpToGeolocation.Tests
     [DeploymentItem("Data")]
     public class JsonTests : BaseTests
     {
-        private static IEnumerable<Provider> Sources;
+        private static IEnumerable<Provider> s_sources;
 
         [ClassInitialize]
         public static void Initialize(TestContext context)
         {
-            Sources = new Provider[] { Provider.AbstractApi, Provider.IpRegistry, Provider.IpStack };
+            s_sources = new Provider[] { Provider.AbstractApi, Provider.IpRegistry, Provider.IpStack };
         }
 
         public static IEnumerable<object[]> GetSources()
-            => Sources.Select(source => new object[] { source });
+            => s_sources.Select(source => new object[] { source });
 
         public static IEnumerable<object[]> GetSourcesWithCities()
         {

@@ -8,9 +8,9 @@ namespace Kapok.IpToGeolocation.AbstractApi
     public class Currency
     {
         [JsonPropertyName("currency_name")]
-        public string CurrencyName { get; set; }
+        public string? CurrencyName { get; set; }
 
         [JsonPropertyName("currency_code")]
-        public string CurrencyCode { get; set; }
+        public string? CurrencyCode { get; set; }
     }
 }

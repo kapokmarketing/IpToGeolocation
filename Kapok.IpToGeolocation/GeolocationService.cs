@@ -31,13 +31,8 @@ namespace Kapok.IpToGeolocation
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            if (httpClient == null)
-            {
-                throw new ArgumentNullException(nameof(httpClient));
-            }
-
             _logger = logger;
-            _httpClient = httpClient;
+            _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
             _configuration = configuration.GetSection(CONFIGURATION_SECTION_NAME).Get<GeolocationConfiguration>();
         }
 

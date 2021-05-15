@@ -11,7 +11,6 @@ namespace Kapok.IpToGeolocation.Tests
 {
     [TestClass]
     [DeploymentItem("Data")]
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "Unused parameters simplifies DynamicData usage.")]
     public class ServiceTests : BaseTests
     {
 
