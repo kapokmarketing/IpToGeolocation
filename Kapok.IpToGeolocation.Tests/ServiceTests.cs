@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: (c) 2021 Kapok Marketing, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
@@ -81,13 +84,33 @@ namespace Kapok.IpToGeolocation.Tests
             Assert.AreEqual(ipAddress, result.IpAddress);
         }
 
+        [TestMethod]
+        public async Task Service_WhenInvalidJson_ShouldReturnNullAndUnknown()
+        {
+            // Arrange
+            var ipAddress = "127.0.0.1";
+            var service = GetGeolocationServiceWithMockHttpMessageHandler("Invalid");
+
+            // Act
+            var result = await service.GetAsync(ipAddress, new Provider[] { Provider.AbstractApi }, CancellationToken.None);
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsNull(result.Location);
+            Assert.AreEqual(Provider.Unknown, result.Provider);
+            Assert.AreEqual(ipAddress, result.IpAddress);
+        }
+
         private GeolocationService GetGeolocationService()
             => new GeolocationService(Configuration, new HttpClient(), null);
 
-        private GeolocationService GetGeolocationServiceWithMockHttpMessageHandler(Provider provider)
+        private GeolocationService GetGeolocationServiceWithMockHttpMessageHandler(string provider)
             => new GeolocationService(Configuration, new HttpClient(GetMockHttpMessageHandler(provider).Object), null);
 
-        private Mock<HttpMessageHandler> GetMockHttpMessageHandler(Provider provider)
+        private GeolocationService GetGeolocationServiceWithMockHttpMessageHandler(Provider provider)
+            => new GeolocationService(Configuration, new HttpClient(GetMockHttpMessageHandler($"{provider}").Object), null);
+
+        private Mock<HttpMessageHandler> GetMockHttpMessageHandler(string provider)
         {
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             handlerMock
@@ -103,7 +126,7 @@ namespace Kapok.IpToGeolocation.Tests
             return handlerMock;
         }
 
-        private Task<HttpResponseMessage> GetMockResponse(Provider provider)
+        private Task<HttpResponseMessage> GetMockResponse(string provider)
         {
             var content = GetJson(provider);
             var response = new HttpResponseMessage

@@ -1,6 +1,13 @@
+// SPDX-FileCopyrightText: (c) 2021 Kapok Marketing, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Kapok.IpToGeolocation.Tests
 {
@@ -59,6 +66,52 @@ namespace Kapok.IpToGeolocation.Tests
 
             // Assert
             Assert.AreEqual(expectedValue, result?.City);
+        }
+
+        [DynamicData(nameof(GetSourcesWithCities), DynamicDataSourceType.Method)]
+        [DataTestMethod]
+        public async Task JsonData_ShouldDeserializeAsyncWithCorrectCity(Provider source, string expectedValue)
+        {
+            // Arrange
+            using var jsonStream = GetJsonStream(source);
+
+            // Act
+            var result = await GeolocationSerializer.DeserializeAsync(source, jsonStream, CancellationToken.None);
+
+            // Assert
+            Assert.AreEqual(expectedValue, result?.City);
+        }
+
+        [TestMethod]
+        public void JsonData_WhenInvalidJson_ShouldThrownJsonException()
+        {
+            // Arrange
+            var json = GetJson("Invalid");
+
+            // Act
+            Action action = () =>
+            {
+                var result = GeolocationSerializer.Deserialize(Provider.AbstractApi, json);
+            };
+
+            // Assert
+            Assert.ThrowsException<JsonException>(action);
+        }
+
+        [TestMethod]
+        public async Task JsonData_WhenInvalidJson_ShouldThrownJsonExceptionAsync()
+        {
+            // Arrange
+            using var jsonStream = GetJsonStream("Invalid");
+
+            // Act
+            Func<Task> action = async () =>
+            {
+                var result = await GeolocationSerializer.DeserializeAsync(Provider.AbstractApi, jsonStream, CancellationToken.None);
+            };
+
+            // Assert
+            await Assert.ThrowsExceptionAsync<JsonException>(action);
         }
     }
 }

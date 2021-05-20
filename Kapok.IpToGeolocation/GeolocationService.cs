@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿// SPDX-FileCopyrightText: (c) 2021 Kapok Marketing, Inc.
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -7,7 +10,6 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Polly;
-using Polly.Retry;
 using System.Linq;
 
 namespace Kapok.IpToGeolocation
@@ -129,12 +131,23 @@ namespace Kapok.IpToGeolocation
                     return new GeolocationResult(ipAddress, retryCount);
                 }
 
-                var dto = await GeolocationSerializer.DeserializeAsync(source, responseStream, cancellationToken);
+                IGeolocationDto? dto;
+
+                try
+                {
+                    dto = await GeolocationSerializer.DeserializeAsync(source, responseStream, cancellationToken);
+                }
+                catch (JsonException ex)
+                {
+                    _logger?.LogWarning(ex, "Attempt ({RetryCount}/??) for geolocation of {IpAddress} with {Provider} failed because of a JSON parsing exception.",
+                        retryCount, ipAddress, source);
+                    return new GeolocationResult(ipAddress, retryCount);
+                }
 
                 if (dto == null)
                 {
-                    _logger?.LogWarning("Attempt ({RetryCount}/??) for geolocation of {IpAddress} failed because of an unexpected result from the provider. Any remaining retries will not occur. Result: {Result}",
-                        retryCount, ipAddress, dto);
+                    _logger?.LogWarning("Attempt ({RetryCount}/??) for geolocation of {IpAddress} with {Provider} failed because of an unexpected result from the provider. Any remaining retries will not occur. Result: {Result}",
+                        retryCount, ipAddress, source, dto);
                     return new GeolocationResult(ipAddress, retryCount);
                 }
 
