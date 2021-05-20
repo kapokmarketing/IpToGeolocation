@@ -13,7 +13,7 @@ namespace Kapok.IpToGeolocation.IpStack
         public string? Capital { get; set; }
 
         [JsonPropertyName("languages")]
-        public List<Language> Languages { get; set; }
+        public List<Language>? Languages { get; set; }
 
         [JsonPropertyName("country_flag")]
         public string? CountryFlag { get; set; }

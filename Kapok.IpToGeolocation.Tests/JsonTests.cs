@@ -1,11 +1,6 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Kapok.IpToGeolocation.Tests
 {
@@ -13,16 +8,16 @@ namespace Kapok.IpToGeolocation.Tests
     [DeploymentItem("Data")]
     public class JsonTests : BaseTests
     {
-        private static IEnumerable<Provider> Sources;
+        private static IEnumerable<Provider> s_sources;
 
         [ClassInitialize]
         public static void Initialize(TestContext context)
         {
-            Sources = new Provider[] { Provider.AbstractApi, Provider.IpRegistry, Provider.IpStack };
+            s_sources = new Provider[] { Provider.AbstractApi, Provider.IpRegistry, Provider.IpStack };
         }
 
         public static IEnumerable<object[]> GetSources()
-            => Sources.Select(source => new object[] { source });
+            => s_sources.Select(source => new object[] { source });
 
         public static IEnumerable<object[]> GetSourcesWithCities()
         {
@@ -35,9 +30,13 @@ namespace Kapok.IpToGeolocation.Tests
         [DataTestMethod]
         public void JsonData_ShouldDeserializeWithData(Provider source)
         {
+            // Arrange
             var json = GetJson(source);
+
+            // Act
             var result = GeolocationSerializer.Deserialize(source, json);
 
+            // Assert
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.City);
             Assert.IsNotNull(result.RegionCode);
@@ -52,9 +51,13 @@ namespace Kapok.IpToGeolocation.Tests
         [DataTestMethod]
         public void JsonData_ShouldDeserializeWithCorrectCity(Provider source, string expectedValue)
         {
+            // Arrange
             var json = GetJson(source);
+
+            // Act
             var result = GeolocationSerializer.Deserialize(source, json);
 
+            // Assert
             Assert.AreEqual(expectedValue, result?.City);
         }
     }

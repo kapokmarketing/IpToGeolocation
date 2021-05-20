@@ -14,6 +14,6 @@ namespace Kapok.IpToGeolocation
         public string? UrlPattern { get; set; }
         public string? PrivateKey { get; set; }
         public string? UrlPatternWithPrivateKey
-            => _urlPatternWithPrivateKey ?? (_urlPatternWithPrivateKey = PrivateKey != null ? UrlPattern?.Replace("{Key}", PrivateKey) : UrlPattern);
+            => _urlPatternWithPrivateKey ??= PrivateKey != null ? UrlPattern?.Replace("{Key}", PrivateKey) : UrlPattern;
     }
 }

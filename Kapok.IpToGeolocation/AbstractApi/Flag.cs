@@ -8,15 +8,15 @@ namespace Kapok.IpToGeolocation.AbstractApi
     public class Flag
     {
         [JsonPropertyName("emoji")]
-        public string Emoji { get; set; }
+        public string? Emoji { get; set; }
 
         [JsonPropertyName("unicode")]
-        public string Unicode { get; set; }
+        public string? Unicode { get; set; }
 
         [JsonPropertyName("png")]
-        public string Png { get; set; }
+        public string? Png { get; set; }
 
         [JsonPropertyName("svg")]
-        public string Svg { get; set; }
+        public string? Svg { get; set; }
     }
 }
