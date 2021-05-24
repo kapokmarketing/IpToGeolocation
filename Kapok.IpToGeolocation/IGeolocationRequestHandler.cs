@@ -7,7 +7,7 @@ namespace Kapok.IpToGeolocation
 {
     public interface IGeolocationRequestHandler
     {
-        Provider SetRequestMessageUri(HttpRequestMessage requestMessage);
-        Provider SetRequestMessageUri(HttpRequestMessage requestMessage, int retryCount);
+        (Provider, int) SetRequestMessageUri(HttpRequestMessage requestMessage);
+        (Provider, int) SetRequestMessageUri(HttpRequestMessage requestMessage, int hostIndex, Provider[] providersToIgnore);
     }
 }

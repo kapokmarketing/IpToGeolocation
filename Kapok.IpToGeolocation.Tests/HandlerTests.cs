@@ -1,18 +1,10 @@
 // SPDX-FileCopyrightText: (c) 2021 Kapok Marketing, Inc.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Moq.Protected;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Kapok.IpToGeolocation.Tests
 {
@@ -30,24 +22,10 @@ namespace Kapok.IpToGeolocation.Tests
             => new [] { GetTestProvider(provider) };
         private GeolocationRequestHandler GetTestHandler(Provider provider)
             => new GeolocationRequestHandler(GetTestProviders(provider), TestIpAddress);
+        private GeolocationRequestHandler GetTestHandler(Provider[] providers)
+            => new GeolocationRequestHandler(providers.Select(provider => GetTestProvider(provider)).ToArray(), TestIpAddress);
         private GeolocationRequestHandler GetTestHandlerEmpty()
             => new GeolocationRequestHandler(Array.Empty<GeolocationProviderConfiguration>(), TestIpAddress);
-
-        [TestMethod]
-        public void Handler_WhenEmpty_ShouldThrowGeolocationException()
-        {
-            // Arrange
-            var handler = GetTestHandlerEmpty();
-
-            // Act
-            var action = new Action(() =>
-            {
-                _ = handler.SetRequestMessageUri(new HttpRequestMessage(), 0);
-            });
-
-            // Assert
-            Assert.ThrowsException<GeolocationException>(action);
-        }
 
         [TestMethod]
         public void Handler_ShouldReturnProvider()
@@ -57,7 +35,7 @@ namespace Kapok.IpToGeolocation.Tests
             var handler = GetTestHandler(expectedValue);
 
             // Act
-            var provider = handler.SetRequestMessageUri(new HttpRequestMessage(), 0);
+            var (provider, _) = handler.SetRequestMessageUri(new HttpRequestMessage(), providerIndex: 0, Array.Empty<Provider>());
 
             // Assert
             Assert.AreEqual(expectedValue, provider);
@@ -72,10 +50,84 @@ namespace Kapok.IpToGeolocation.Tests
             var request = new HttpRequestMessage();
 
             // Act
-            _ = handler.SetRequestMessageUri(request, 0);
+            _ = handler.SetRequestMessageUri(request, 0, Array.Empty<Provider>());
 
             // Assert
             Assert.AreEqual(TestUrl, request.RequestUri.ToString());
+        }
+
+        [DataRow(0)]
+        [DataRow(1)]
+        [DataTestMethod]
+        public void Handler_ShouldIncrementProviderIndex(int providerIndex)
+        {
+            // Arrange
+            var providers = new [] { Provider.AbstractApi, Provider.IpGeolocationApi };
+            var expectedNextProviderIndex = (providerIndex + 1) % providers.Length;
+            var handler = GetTestHandler(providers);
+            var request = new HttpRequestMessage();
+
+            // Act
+            var (_, nextIndex) = handler.SetRequestMessageUri(request, providerIndex, Array.Empty<Provider>());
+
+            // Assert
+            Assert.AreEqual(expectedNextProviderIndex, nextIndex % providers.Length);
+        }
+
+        [TestMethod]
+        public void Handler_WhenEmpty_ShouldThrowGeolocationException()
+        {
+            // Arrange
+            var handler = GetTestHandlerEmpty();
+
+            // Act
+            Action action = () =>
+            {
+                _ = handler.SetRequestMessageUri(new HttpRequestMessage(), providerIndex: 0, Array.Empty<Provider>());
+            };
+
+            // Assert
+            Assert.ThrowsException<GeolocationException>(action);
+        }
+
+        [DataRow(0, Provider.AbstractApi)]
+        [DataRow(0, Provider.IpGeolocationApi)]
+        [DataRow(1, Provider.AbstractApi)]
+        [DataRow(1, Provider.IpGeolocationApi)]
+        [DataTestMethod]
+        public void Handler_WhenProviderIgnored_ShouldNotReturnIgnoredProvider(int providerIndex, Provider notExpected)
+        {
+            // Arrange
+            var providers = new [] { Provider.AbstractApi, Provider.IpGeolocationApi };
+            var handler = GetTestHandler(providers);
+            var providersToIgnore = new [] { notExpected };
+            var request = new HttpRequestMessage();
+
+            // Act
+            var (provider, nextIndex) = handler.SetRequestMessageUri(request, providerIndex, providersToIgnore);
+
+            // Assert
+            Assert.IsNotNull(provider);
+            Assert.AreNotEqual(notExpected, provider);
+        }
+
+        [DataRow(0, new [] { Provider.AbstractApi, Provider.IpGeolocationApi })]
+        [DataRow(0, new [] { Provider.AbstractApi })]
+        [DataTestMethod]
+        public void Handler_WhenAllIgnored_ShouldThrowGeolocationException(int providerIndex, Provider[] providers)
+        {
+            // Arrange
+            var handler = GetTestHandler(providers);
+            var request = new HttpRequestMessage();
+
+            // Act
+            Action action = () =>
+            {
+                _ = handler.SetRequestMessageUri(request, providerIndex: 0, providers);
+            };
+
+            // Assert
+            Assert.ThrowsException<GeolocationException>(action);
         }
     }
 }
