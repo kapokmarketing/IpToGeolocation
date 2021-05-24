@@ -9,6 +9,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Polly;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 
 namespace Kapok.IpToGeolocation.Tests
 {
@@ -45,9 +48,25 @@ namespace Kapok.IpToGeolocation.Tests
             {
                 Assert.IsNotNull(result);
                 Assert.IsNull(result.Location);
-                // TODO: Should we check the Provider?
                 Assert.AreEqual(ipAddress, result.IpAddress);
             }
+        }
+
+        [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
+        [DataTestMethod]
+        public async Task Service_WhenNoContent_ShouldIgnoreProvider(Provider provider, string ipAddress, bool expectSuccess)
+        {
+            // Arrange
+            var service = GetGeolocationServiceFromServiceCollection(provider, HttpStatusCode.NoContent);
+
+            // Act
+            var result = await service.GetAsync(ipAddress, new[] { Provider.AbstractApi /* Priority 10 */, Provider.IpGeolocationApi /* Priority 50 */ }, CancellationToken.None);
+            
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.IsNotNull(result.Location);
+            Assert.AreEqual(Provider.IpGeolocationApi, result.Provider);
+            Assert.AreEqual(ipAddress, result.IpAddress);
         }
 
         [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
@@ -101,16 +120,30 @@ namespace Kapok.IpToGeolocation.Tests
             Assert.AreEqual(ipAddress, result.IpAddress);
         }
 
+        private GeolocationService GetGeolocationServiceFromServiceCollection(Provider provider, HttpStatusCode firstStatusCode = HttpStatusCode.OK, HttpStatusCode statusCode = HttpStatusCode.OK)
+        { 
+            var services = new ServiceCollection();
+
+            services
+                .AddScoped(_ => Configuration)
+                .AddGeolocationService(retryCount: 3)
+                .AddHttpMessageHandler(() => new MockHttpMessageHandler(provider, firstStatusCode, statusCode));
+
+            return services
+                    .BuildServiceProvider()
+                    .GetRequiredService<GeolocationService>();
+        }
+
         private GeolocationService GetGeolocationService()
             => new GeolocationService(Configuration, new HttpClient(), null);
 
-        private GeolocationService GetGeolocationServiceWithMockHttpMessageHandler(string provider)
-            => new GeolocationService(Configuration, new HttpClient(GetMockHttpMessageHandler(provider).Object), null);
+        private GeolocationService GetGeolocationServiceWithMockHttpMessageHandler(string provider, HttpStatusCode firstStatusCode = HttpStatusCode.OK, HttpStatusCode statusCode = HttpStatusCode.OK)
+            => new GeolocationService(Configuration, new HttpClient(GetMockHttpMessageHandler(provider, firstStatusCode, statusCode).Object), null);
 
-        private GeolocationService GetGeolocationServiceWithMockHttpMessageHandler(Provider provider)
-            => new GeolocationService(Configuration, new HttpClient(GetMockHttpMessageHandler($"{provider}").Object), null);
+        private GeolocationService GetGeolocationServiceWithMockHttpMessageHandler(Provider provider, HttpStatusCode firstStatusCode = HttpStatusCode.OK, HttpStatusCode statusCode = HttpStatusCode.OK)
+            => new GeolocationService(Configuration, new HttpClient(GetMockHttpMessageHandler($"{provider}", firstStatusCode, statusCode).Object), null);
 
-        private Mock<HttpMessageHandler> GetMockHttpMessageHandler(string provider)
+        private Mock<HttpMessageHandler> GetMockHttpMessageHandler(string provider, HttpStatusCode? firstStatusCode, HttpStatusCode statusCode)
         {
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
             handlerMock
@@ -120,18 +153,21 @@ namespace Kapok.IpToGeolocation.Tests
                   ItExpr.IsAny<HttpRequestMessage>(),
                   ItExpr.IsAny<CancellationToken>()
                )
-               .Returns((HttpRequestMessage request, CancellationToken cancellationToken) => GetMockResponse(provider))
+               .Returns((HttpRequestMessage request, CancellationToken cancellationToken) => GetMockResponse(request, provider, firstStatusCode, statusCode))
                .Verifiable();
 
             return handlerMock;
         }
 
-        private Task<HttpResponseMessage> GetMockResponse(string provider)
+        private Task<HttpResponseMessage> GetMockResponse(HttpRequestMessage request, string provider, HttpStatusCode? firstStatusCode, HttpStatusCode statusCode)
         {
-            var content = GetJson(provider);
+            var context = request.GetPolicyExecutionContext();
+            var retryCount = context.GetRetryCount();
+
+            var content = TestData.GetJson(provider);
             var response = new HttpResponseMessage
             {
-                StatusCode = HttpStatusCode.OK,
+                StatusCode = retryCount > 0 ? statusCode : (firstStatusCode ?? statusCode),
                 Content = new StringContent(content),
             };
 

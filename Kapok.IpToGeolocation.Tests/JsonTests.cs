@@ -38,7 +38,7 @@ namespace Kapok.IpToGeolocation.Tests
         public void JsonData_ShouldDeserializeWithData(Provider source)
         {
             // Arrange
-            var json = GetJson(source);
+            var json = TestData.GetJson(source);
 
             // Act
             var result = GeolocationSerializer.Deserialize(source, json);
@@ -59,7 +59,7 @@ namespace Kapok.IpToGeolocation.Tests
         public void JsonData_ShouldDeserializeWithCorrectCity(Provider source, string expectedValue)
         {
             // Arrange
-            var json = GetJson(source);
+            var json = TestData.GetJson(source);
 
             // Act
             var result = GeolocationSerializer.Deserialize(source, json);
@@ -73,7 +73,7 @@ namespace Kapok.IpToGeolocation.Tests
         public async Task JsonData_ShouldDeserializeAsyncWithCorrectCity(Provider source, string expectedValue)
         {
             // Arrange
-            using var jsonStream = GetJsonStream(source);
+            using var jsonStream = TestData.GetJsonStream(source);
 
             // Act
             var result = await GeolocationSerializer.DeserializeAsync(source, jsonStream, CancellationToken.None);
@@ -86,7 +86,7 @@ namespace Kapok.IpToGeolocation.Tests
         public void JsonData_WhenInvalidJson_ShouldThrownJsonException()
         {
             // Arrange
-            var json = GetJson("Invalid");
+            var json = TestData.GetJson("Invalid");
 
             // Act
             Action action = () =>
@@ -102,7 +102,7 @@ namespace Kapok.IpToGeolocation.Tests
         public async Task JsonData_WhenInvalidJson_ShouldThrownJsonExceptionAsync()
         {
             // Arrange
-            using var jsonStream = GetJsonStream("Invalid");
+            using var jsonStream = TestData.GetJsonStream("Invalid");
 
             // Act
             Func<Task> action = async () =>

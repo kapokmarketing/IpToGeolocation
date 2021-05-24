@@ -16,10 +16,6 @@ namespace Kapok.IpToGeolocation
 {
     public class GeolocationService
     {
-        public static readonly string CONTEXT_KEY_PROVIDER = "provider";
-        public static readonly string CONTEXT_KEY_HANDLER = "handler";
-        public static readonly string CONTEXT_KEY_REQUEST = "request";
-        public static readonly string CONTEXT_KEY_RETRY_COUNT = "retryCount";
         public static readonly string CONFIGURATION_SECTION_NAME = "IpToGeolocation";
 
         private readonly ILogger<GeolocationService>? _logger;
@@ -66,39 +62,20 @@ namespace Kapok.IpToGeolocation
             }
 
             var handler = new GeolocationRequestHandler(providers, ipAddress);
-            var provider = handler.SetRequestMessageUri(request);
-            var context = new Context($"GeolocationFor{ipAddress}", new Dictionary<string, object>
+            var (provider, providerIndex) = handler.SetRequestMessageUri(request);
+            var context = new Context($"GeolocationService", new Dictionary<string, object>
             {
-                { CONTEXT_KEY_HANDLER, handler },
-                { CONTEXT_KEY_REQUEST, request },
-                { CONTEXT_KEY_PROVIDER, provider }
+                { ContextKey.Handler, handler },
+                { ContextKey.Request, request },
+                { ContextKey.Provider, provider },
+                { ContextKey.ProviderIndex, providerIndex }
             });
 
             request.SetPolicyExecutionContext(context);
-
+            
             return (request, context);
         }
-
-        private Provider GetProvider(Context context)
-        {
-            if (context.TryGetValue(CONTEXT_KEY_PROVIDER, out var temp) && temp is Provider provider)
-            {
-                return provider;
-            }
-
-            return Provider.Unknown;
-        }
-
-        private int GetRetryCount(Context context)
-        {
-            if (context.TryGetValue(CONTEXT_KEY_RETRY_COUNT, out var temp) && temp is int retryCount)
-            {
-                return retryCount;
-            }
-
-            return 0;
-        }
-
+        
         public Task<GeolocationResult> GetAsync(string ipAddress, CancellationToken cancellationToken)
             => GetAsync(ipAddress, validProviders: null, cancellationToken);
 
@@ -113,7 +90,7 @@ namespace Kapok.IpToGeolocation
             }
 
             var response = await _httpClient.SendAsync(request, cancellationToken);
-            var retryCount = GetRetryCount(context);
+            var retryCount = context.GetRetryCount();
             if (!response.IsSuccessStatusCode)
             {
                 _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} failed with status code {StatusCode} for {OperationKey}. Content will not be processed.",
@@ -123,7 +100,7 @@ namespace Kapok.IpToGeolocation
 
             using (var responseStream = await response.Content.ReadAsStreamAsync())
             {
-                var source = GetProvider(context);
+                var source = context.GetProvider();
                 if (source == Provider.Unknown)
                 {
                     _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} context is missing the source for {OperationKey}. Deserialization cannot occur.",

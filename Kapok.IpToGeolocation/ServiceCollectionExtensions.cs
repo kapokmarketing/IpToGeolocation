@@ -4,26 +4,42 @@
 using Kapok.IpToGeolocation;
 using Polly;
 using Polly.Retry;
-using System;
-using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
-using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ServiceCollectionExtensions
     {
+        // request.GetPolicyExecutionContext()
         public static IHttpClientBuilder AddGeolocationServicePolicyHandler(this IHttpClientBuilder builder, int retryCount)
             => builder.AddPolicyHandler(Policy.HandleInner<HttpRequestException>()
-                .OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode)
+                .OrResult<HttpResponseMessage>((response) => {
+                    var successStatusCode = response.IsSuccessStatusCode;
+                    var noContent = response.StatusCode == HttpStatusCode.NoContent;
+
+                    if (noContent)
+                    {
+                        var context = response.RequestMessage.GetPolicyExecutionContext();
+                        context[ContextKey.ProvidersFailed] = context.GetFailedProviders().Concat(new Provider[] { context.GetProvider() });
+                    }
+
+                    return !successStatusCode || noContent;
+                })
                 .RetryAsync(retryCount, (ex, retryCount, context) =>
                 {
-                    if (context.TryGetValue(GeolocationService.CONTEXT_KEY_REQUEST, out var temp) && temp is HttpRequestMessage request
-                    && context.TryGetValue(GeolocationService.CONTEXT_KEY_HANDLER, out temp) && temp is IGeolocationRequestHandler handler)
+                    var request = context.GetRequest();
+                    var handler = context.GetHandler();
+                    var providerIndex = context.GetProviderIndex();
+                    var failedProviders = context.GetFailedProviders();
+
+                    if (request != null && handler != null)
                     {
-                        var provider = handler.SetRequestMessageUri(request, retryCount);
-                        context[GeolocationService.CONTEXT_KEY_PROVIDER] = provider;
-                        context[GeolocationService.CONTEXT_KEY_RETRY_COUNT] = retryCount;
+                        var (provider, nextProviderIndex) = handler.SetRequestMessageUri(request, providerIndex, failedProviders);
+                        context[ContextKey.Provider] = provider;
+                        context[ContextKey.RetryCount] = retryCount;
+                        context[ContextKey.ProviderIndex] = nextProviderIndex;
                     }
                 }));
 
