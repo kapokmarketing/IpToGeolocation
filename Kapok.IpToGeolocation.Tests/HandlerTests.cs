@@ -100,11 +100,10 @@ namespace Kapok.IpToGeolocation.Tests
             // Arrange
             var providers = new Provider[] { Provider.AbstractApi, Provider.IpGeolocationApi };
             var handler = GetTestHandler(providers);
-            var providersToIgnore = new Provider[] { notExpected };
             var request = new HttpRequestMessage();
 
             // Act
-            var (provider, nextIndex) = handler.SetRequestMessageUri(request, providerIndex, providersToIgnore);
+            var (provider, nextIndex) = handler.SetRequestMessageUri(request, providerIndex, new Provider[] { notExpected });
 
             // Assert
             Assert.IsNotNull(provider);
@@ -123,7 +122,7 @@ namespace Kapok.IpToGeolocation.Tests
             // Act
             Action action = () =>
             {
-                var _ = handler.SetRequestMessageUri(request, providerIndex: 0, providers);
+                _ = handler.SetRequestMessageUri(request, providerIndex: 0, providers);
             };
 
             // Assert
