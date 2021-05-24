@@ -60,7 +60,7 @@ namespace Kapok.IpToGeolocation.Tests
             var service = GetGeolocationServiceFromServiceCollection(provider, HttpStatusCode.NoContent);
 
             // Act
-            var result = await service.GetAsync(ipAddress, new[] { Provider.AbstractApi /* Priority 10 */, Provider.IpGeolocationApi /* Priority 50 */ }, CancellationToken.None);
+            var result = await service.GetAsync(ipAddress, new [] { Provider.AbstractApi /* Priority 10 */, Provider.IpGeolocationApi /* Priority 50 */ }, CancellationToken.None);
             
             // Assert
             Assert.IsNotNull(result);

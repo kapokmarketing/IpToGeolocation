@@ -62,7 +62,7 @@ namespace Kapok.IpToGeolocation.Tests
         public void Handler_ShouldIncrementProviderIndex(int providerIndex)
         {
             // Arrange
-            var providers = new Provider[] { Provider.AbstractApi, Provider.IpGeolocationApi };
+            var providers = new [] { Provider.AbstractApi, Provider.IpGeolocationApi };
             var expectedNextProviderIndex = (providerIndex + 1) % providers.Length;
             var handler = GetTestHandler(providers);
             var request = new HttpRequestMessage();
@@ -98,20 +98,21 @@ namespace Kapok.IpToGeolocation.Tests
         public void Handler_WhenProviderIgnored_ShouldNotReturnIgnoredProvider(int providerIndex, Provider notExpected)
         {
             // Arrange
-            var providers = new Provider[] { Provider.AbstractApi, Provider.IpGeolocationApi };
+            var providers = new [] { Provider.AbstractApi, Provider.IpGeolocationApi };
             var handler = GetTestHandler(providers);
+            var providersToIgnore = new [] { notExpected };
             var request = new HttpRequestMessage();
 
             // Act
-            var (provider, nextIndex) = handler.SetRequestMessageUri(request, providerIndex, new Provider[] { notExpected });
+            var (provider, nextIndex) = handler.SetRequestMessageUri(request, providerIndex, providersToIgnore);
 
             // Assert
             Assert.IsNotNull(provider);
             Assert.AreNotEqual(notExpected, provider);
         }
 
-        [DataRow(0, new Provider[] { Provider.AbstractApi, Provider.IpGeolocationApi })]
-        [DataRow(0, new Provider[] { Provider.AbstractApi })]
+        [DataRow(0, new [] { Provider.AbstractApi, Provider.IpGeolocationApi })]
+        [DataRow(0, new [] { Provider.AbstractApi })]
         [DataTestMethod]
         public void Handler_WhenAllIgnored_ShouldThrowGeolocationException(int providerIndex, Provider[] providers)
         {
