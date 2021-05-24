@@ -26,3 +26,7 @@ jobs:
       run: dotnet build --no-restore --configuration Release
     - name: Test
       run: dotnet test --no-build --configuration Release --verbosity normal
+    #- name: Publish
+    #  run: dotnet nuget push */bin/Release/*.nupkg -k $NUGET_AUTH_TOKEN -s https://api.nuget.org/v3/index.json
+    #  env:
+    #    NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
