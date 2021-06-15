@@ -26,31 +26,31 @@ namespace Kapok.IpToGeolocation.Tests
             yield return new object[] { Provider.AbstractApi, "166.171.248.255", false };
         }
 
-        [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
-        [DataTestMethod]
-        public async Task Service_WhenOneProvider_ShouldReturnWithValidDataLive(Provider provider, string ipAddress, bool expectSuccess)
-        {
-            // Arrange
-            var service = GetGeolocationService();
+        //[DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
+        //[DataTestMethod]
+        //public async Task Service_WhenOneProvider_ShouldReturnWithValidDataLive(Provider provider, string ipAddress, bool expectSuccess)
+        //{
+        //    // Arrange
+        //    var service = GetGeolocationService();
 
-            // Act
-            var result = await service.GetAsync(ipAddress, new Provider[] { provider }, CancellationToken.None);
+        //    // Act
+        //    var result = await service.GetAsync(ipAddress, new Provider[] { provider }, CancellationToken.None);
 
-            // Assert
-            if (expectSuccess)
-            {
-                Assert.IsNotNull(result);
-                Assert.IsNotNull(result.Location);
-                Assert.AreEqual(provider, result.Provider);
-                Assert.AreEqual(ipAddress, result.IpAddress);
-            }
-            else
-            {
-                Assert.IsNotNull(result);
-                Assert.IsNull(result.Location);
-                Assert.AreEqual(ipAddress, result.IpAddress);
-            }
-        }
+        //    // Assert
+        //    if (expectSuccess)
+        //    {
+        //        Assert.IsNotNull(result);
+        //        Assert.IsNotNull(result.Location);
+        //        Assert.AreEqual(provider, result.Provider);
+        //        Assert.AreEqual(ipAddress, result.IpAddress);
+        //    }
+        //    else
+        //    {
+        //        Assert.IsNotNull(result);
+        //        Assert.IsNull(result.Location);
+        //        Assert.AreEqual(ipAddress, result.IpAddress);
+        //    }
+        //}
 
         [DynamicData(nameof(GetSourcesWithIpAddresses), DynamicDataSourceType.Method)]
         [DataTestMethod]
