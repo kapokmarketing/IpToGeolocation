@@ -72,10 +72,10 @@ namespace Kapok.IpToGeolocation
             });
 
             request.SetPolicyExecutionContext(context);
-            
+
             return (request, context);
         }
-        
+
         public Task<GeolocationResult> GetAsync(string ipAddress, CancellationToken cancellationToken)
             => GetAsync(ipAddress, validProviders: null, cancellationToken);
 
@@ -98,38 +98,37 @@ namespace Kapok.IpToGeolocation
                 return new GeolocationResult(ipAddress, retryCount);
             }
 
-            using (var responseStream = await response.Content.ReadAsStreamAsync())
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+
+            var source = context.GetProvider();
+            if (source == Provider.Unknown)
             {
-                var source = context.GetProvider();
-                if (source == Provider.Unknown)
-                {
-                    _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} context is missing the source for {OperationKey}. Deserialization cannot occur.",
-                        retryCount, ipAddress, context?.OperationKey);
-                    return new GeolocationResult(ipAddress, retryCount);
-                }
-
-                IGeolocationDto? dto;
-
-                try
-                {
-                    dto = await GeolocationSerializer.DeserializeAsync(source, responseStream, cancellationToken);
-                }
-                catch (JsonException ex)
-                {
-                    _logger?.LogWarning(ex, "Attempt ({RetryCount}/??) for geolocation of {IpAddress} with {Provider} failed because of a JSON parsing exception.",
-                        retryCount, ipAddress, source);
-                    return new GeolocationResult(ipAddress, retryCount);
-                }
-
-                if (dto == null)
-                {
-                    _logger?.LogWarning("Attempt ({RetryCount}/??) for geolocation of {IpAddress} with {Provider} failed because of an unexpected result from the provider. Any remaining retries will not occur. Result: {Result}",
-                        retryCount, ipAddress, source, dto);
-                    return new GeolocationResult(ipAddress, retryCount);
-                }
-
-                return new GeolocationResult(ipAddress, dto, source, retryCount);
+                _logger?.LogWarning("Final retry attempt ({RetryCount}) for geolocation of {IpAddress} context is missing the source for {OperationKey}. Deserialization cannot occur.",
+                    retryCount, ipAddress, context?.OperationKey);
+                return new GeolocationResult(ipAddress, retryCount);
             }
+
+            IGeolocationDto? dto;
+
+            try
+            {
+                dto = await GeolocationSerializer.DeserializeAsync(source, responseStream, cancellationToken);
+            }
+            catch (JsonException ex)
+            {
+                _logger?.LogWarning(ex, "Attempt ({RetryCount}/??) for geolocation of {IpAddress} with {Provider} failed because of a JSON parsing exception.",
+                    retryCount, ipAddress, source);
+                return new GeolocationResult(ipAddress, retryCount);
+            }
+
+            if (dto == null)
+            {
+                _logger?.LogWarning("Attempt ({RetryCount}/??) for geolocation of {IpAddress} with {Provider} failed because of an unexpected result from the provider. Any remaining retries will not occur. Result: {Result}",
+                    retryCount, ipAddress, source, dto);
+                return new GeolocationResult(ipAddress, retryCount);
+            }
+
+            return new GeolocationResult(ipAddress, dto, source, retryCount);
         }
     }
 }
