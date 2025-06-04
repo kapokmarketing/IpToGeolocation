@@ -52,7 +52,6 @@ namespace Kapok.IpToGeolocation
         /// </summary>
         /// <param name="source"></param>
         /// <param name="utf8Json"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException">Thrown when utf8Json or returnType is null.</exception>
         /// <exception cref="JsonException">Thrown when the JSON is invalid or there is remaining data in the string.</exception>
