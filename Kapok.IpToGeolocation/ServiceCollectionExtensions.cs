@@ -22,7 +22,10 @@ namespace Microsoft.Extensions.DependencyInjection
                     if (noContent)
                     {
                         var context = response.RequestMessage.GetPolicyExecutionContext();
-                        context[ContextKey.ProvidersFailed] = context.GetFailedProviders().Concat(new Provider[] { context.GetProvider() });
+                        context[ContextKey.ProvidersFailed] =
+                            context.GetFailedProviders()
+                                .Concat(new[] { context.GetProvider() })
+                                .ToArray();
                     }
 
                     return !successStatusCode || noContent;
